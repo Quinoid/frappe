@@ -2042,7 +2042,28 @@ def get_list(doctype, *args, **kwargs):
 	"""
 	import frappe.model.db_query
 
-	return frappe.model.db_query.DatabaseQuery(doctype).execute(*args, **kwargs)
+
+	copy_kwargs = kwargs
+
+	valid_doctypes = {
+		'CRM Deal Probability': 'tabCRM Deal Probability',
+		'CRM Lead Quality': 'tabCRM Lead Quality',
+		'CRM Priority': 'tabCRM Priority',
+		'Type Of Business': 'tabType Of Business',
+	}
+	
+	if doctype in valid_doctypes:
+		order_by = 'position'
+		fields = copy_kwargs['fields']
+		#fields.append('`tabCRM Deal Probability`.`position`')
+		table_name = f'`tab{doctype}`'
+		fields.append(f'{table_name}.`position`')
+		copy_kwargs['fields'] = fields
+	
+	result_return =  frappe.model.db_query.DatabaseQuery(doctype).execute(*args, **copy_kwargs)
+
+	return result_return
+
 
 
 def get_all(doctype, *args, **kwargs):
@@ -2064,6 +2085,16 @@ def get_all(doctype, *args, **kwargs):
 	        # filter as a list of lists
 	        frappe.get_all("ToDo", fields=["*"], filters = [["modified", ">", "2014-01-01"]])
 	"""
+	valid_doctypes = {
+		'CRM Deal Probability': 'tabCRM Deal Probability',
+		'CRM Lead Quality': 'tabCRM Lead Quality',
+		'CRM Priority': 'tabCRM Priority',
+		'Type Of Business': 'tabType Of Business',
+	}
+	
+	if doctype in valid_doctypes:
+		order_by = 'position'
+
 	kwargs["ignore_permissions"] = True
 	if "limit_page_length" not in kwargs:
 		kwargs["limit_page_length"] = 0
