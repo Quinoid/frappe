@@ -44,6 +44,32 @@ def search_link(
 	reference_doctype: str | None = None,
 	ignore_user_permissions: bool = False,
 ) -> list[LinkSearchResults]:
+
+	if doctype == "Contact":
+		if not filters:
+			filters = {}
+
+		filters["user"] = ""
+
+	if doctype == 'CRM Deal Probability':
+		order_by = 'position'
+
+	if doctype == "User":  # Apply custom filtering for the User doctype
+		if not filters:
+			filters = {}
+		# Get users with the roles "Sales Manager" or "Sales User"
+		users_with_roles = frappe.get_all(
+			"Has Role",
+			filters={"role": ["in", ["Sales Manager", "Sales User"]]},
+			fields=["parent"]  # Parent is the linked User ID
+		)
+
+		# Extract user IDs from the query result
+		user_ids = [user["parent"] for user in users_with_roles]
+
+		# Apply an additional filter to only include these user IDs
+		filters["name"] = ["in", user_ids]
+
 	results = search_widget(
 		doctype,
 		txt.strip(),
@@ -176,7 +202,11 @@ def search_widget(
 		formatted_fields.append(f"""{_relevance} as `_relevance`""")
 		# Since we are sorting by alias postgres needs to know number of column we are sorting
 		if frappe.db.db_type == "mariadb":
-			order_by = f"ifnull(_relevance, -9999) desc, {order_by}"
+			if doctype == 'CRM Deal Probability':
+				order_by = 'position'
+			else:
+				order_by = f"ifnull(_relevance, -9999) desc, {order_by}"
+
 		elif frappe.db.db_type == "postgres":
 			# Since we are sorting by alias postgres needs to know number of column we are sorting
 			order_by = f"{len(formatted_fields)} desc nulls last, {order_by}"
@@ -218,8 +248,18 @@ def search_widget(
 	# Sorting the values array so that relevant results always come first
 	# This will first bring elements on top in which query is a prefix of element
 	# Then it will bring the rest of the elements and sort them in lexicographical order
-	values = sorted(values, key=lambda x: relevance_sorter(x, txt, as_dict))
 
+	special_sorting_doctypes = [
+		'CRM Deal Probability',
+		'CRM Lead Quality',
+		'CRM Priority',
+		'Type Of Business',
+	]
+
+	# Determine if the current doctype requires special sorting
+	special_sorting = doctype in special_sorting_doctypes
+
+	values = sorted(values, key=lambda x: relevance_sorter(x, txt, as_dict, special_sorting))
 	# remove _relevance from results
 	if not meta.translated_doctype:
 		if as_dict:
@@ -282,9 +322,20 @@ def scrub_custom_query(query, key, txt):
 	return query
 
 
-def relevance_sorter(key, query, as_dict):
-	value = _(key.name if as_dict else key[0])
-	return (cstr(value).casefold().startswith(query.casefold()) is not True, value)
+# def relevance_sorter(key, query, as_dict):
+# 	value = _(key.name if as_dict else key[0])
+# 	return (cstr(value).casefold().startswith(query.casefold()) is not True, value)
+
+def relevance_sorter(key, query, as_dict, sort_by_last=False):
+    # Retrieve the value to sort by (name or first element)
+    value = _(key.name if as_dict else key[0])
+
+    # If sort_by_last is True, use the last element of the tuple for sorting
+    if sort_by_last:
+        return key[-1]
+
+    # Default sorting logic
+    return (cstr(value).casefold().startswith(query.casefold()) is not True, value)
 
 
 @frappe.whitelist()
