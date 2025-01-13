@@ -49,6 +49,9 @@ def get_list(
 	if frappe.is_table(doctype):
 		check_parent_permission(parent, doctype)
 
+	if doctype == 'CRM Deal Probability':
+		order_by = 'position'
+
 	args = frappe._dict(
 		doctype=doctype,
 		parent_doctype=parent,
