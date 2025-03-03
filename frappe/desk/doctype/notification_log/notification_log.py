@@ -162,7 +162,7 @@ def get_email_header(doc, language: str | None = None):
 	header_map = {
 		"Default": _("New Notification", lang=language),
 		"Mention": _("New Mention on {0}", lang=language).format(docname),
-		"Assignment": _("Assignment Update on {0}", lang=language).format(docname),
+		"Assignment": _("Assignment Update", lang=language).format(docname),
 		"Share": _("New Document Shared {0}", lang=language).format(docname),
 		"Energy Point": _("Energy Point Update on {0}", lang=language).format(docname),
 	}
