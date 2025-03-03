@@ -142,6 +142,11 @@ def send_notification_email(doc: NotificationLog):
 	if doc.document_type == 'crm-task':
 		args["doc_link"] = get_url(uri=f"/crm/tasks/view")
 
+
+	if doc.document_type == 'CRM Task':
+		args["doc_link"] = get_url(uri=f"/crm/tasks/view")
+	else:
+		args["doc_link"] = get_url(uri=f"/crm")
 	frappe.sendmail(
 		recipients=user.email,
 		subject=email_subject,
