@@ -51,8 +51,11 @@ def search_link(
 
 		filters["user"] = ""
 
-	if doctype == 'CRM Deal Probability':
+	if doctype in ['CRM Deal Probability', 'CRM Lead Status', 'CRM Deal Status', 'Contact Status', 'CRM Organization Status']:
 		order_by = 'position'
+	else:
+		order_by = ''
+
 
 	if doctype == "User":  # Apply custom filtering for the User doctype
 		if not filters:
@@ -202,7 +205,7 @@ def search_widget(
 		formatted_fields.append(f"""{_relevance} as `_relevance`""")
 		# Since we are sorting by alias postgres needs to know number of column we are sorting
 		if frappe.db.db_type == "mariadb":
-			if doctype == 'CRM Deal Probability':
+			if doctype in ['CRM Deal Probability', 'CRM Lead Status', 'CRM Deal Status', 'Contact Status', 'CRM Organization Status']:
 				order_by = 'position'
 			else:
 				order_by = f"ifnull(_relevance, -9999) desc, {order_by}"
@@ -254,6 +257,10 @@ def search_widget(
 		'CRM Lead Quality',
 		'CRM Priority',
 		'Type Of Business',
+		'CRM Lead Status', 
+		'CRM Deal Status', 
+		'Contact Status', 
+		'CRM Organization Status'
 	]
 
 	# Determine if the current doctype requires special sorting

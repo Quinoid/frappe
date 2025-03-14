@@ -2050,6 +2050,10 @@ def get_list(doctype, *args, **kwargs):
 		'CRM Lead Quality': 'tabCRM Lead Quality',
 		'CRM Priority': 'tabCRM Priority',
 		'Type Of Business': 'tabType Of Business',
+		'CRM Lead Status': 'tabCRM Lead Status',
+		'CRM Deal Status': 'tabCRM Deal Status',
+		'CRM Organization Status': 'tabCRM Organization Status',
+		'Contact Status': 'tabContact Status',
 	}
 	
 	if doctype in valid_doctypes:
