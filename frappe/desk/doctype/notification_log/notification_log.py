@@ -120,7 +120,7 @@ def send_notification_email(doc: NotificationLog):
 	if doc.type == "Energy Point" and doc.email_content is None:
 		return
 
-	from frappe.utils import get_url_to_form, strip_html
+	from frappe.utils import get_url_to_form, strip_html, get_url
 
 	user = frappe.db.get_value("User", doc.for_user, fieldname=["email", "language"], as_dict=True)
 	if not user:
@@ -137,7 +137,10 @@ def send_notification_email(doc: NotificationLog):
 	else:
 		args["document_type"] = doc.document_type
 		args["document_name"] = doc.document_name
-		args["doc_link"] = get_url_to_form(doc.document_type, doc.document_name)
+		if doc.document_type == 'crm-task':
+			args["doc_link"] = get_url(uri=f"/crm/tasks/view")
+		else:
+			args["doc_link"] = get_url_to_form(doc.document_type, doc.document_name)
 
 	frappe.sendmail(
 		recipients=user.email,
